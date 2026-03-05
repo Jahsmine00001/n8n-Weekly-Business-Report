@@ -1,0 +1,146 @@
+{
+  "name": "My workflow 2",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "weeks",
+              "triggerAtDay": [
+                1
+              ],
+              "triggerAtHour": 8
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -448,
+        0
+      ],
+      "id": "f8c1085b-cc07-4f17-8973-5bddeb4366c7",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1f9Nyhf_sQdinO66wuFYy3sJIfIdNdchzsXSZf_Uzv6M",
+          "mode": "list",
+          "cachedResultName": "Untitled spreadsheet",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1f9Nyhf_sQdinO66wuFYy3sJIfIdNdchzsXSZf_Uzv6M/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 883651067,
+          "mode": "list",
+          "cachedResultName": "Retail_data",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1f9Nyhf_sQdinO66wuFYy3sJIfIdNdchzsXSZf_Uzv6M/edit#gid=883651067"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -240,
+        0
+      ],
+      "id": "f795a7d8-085e-45ba-9735-ce70d17e91a1",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "k69xjLOKPQjj3hks",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get all rows from Google Sheets\nconst rows = $input.all().map(item => item.json);\n\n// ---- TOTAL REVENUE ----\nconst totalRevenue = rows.reduce((sum, row) => {\n  return sum + parseFloat(row.Revenue || 0);\n}, 0);\n\n// ---- BEST PRODUCT ----\nconst productRevenue = {};\nrows.forEach(row => {\n  const product = row.Product;\n  const rev = parseFloat(row.Revenue || 0);\n  productRevenue[product] = (productRevenue[product] || 0) + rev;\n});\nconst bestProduct = Object.entries(productRevenue)\n  .sort((a, b) => b[1] - a[1])[0];\n\n// ---- BEST REGION ----\nconst regionRevenue = {};\nrows.forEach(row => {\n  const region = row.Region;\n  const rev = parseFloat(row.Revenue || 0);\n  regionRevenue[region] = (regionRevenue[region] || 0) + rev;\n});\nconst bestRegion = Object.entries(regionRevenue)\n  .sort((a, b) => b[1] - a[1])[0];\n\n// ---- BEST SALES REP ----\nconst repRevenue = {};\nrows.forEach(row => {\n  const rep = row.Sales_Rep;\n  const rev = parseFloat(row.Revenue || 0);\n  repRevenue[rep] = (repRevenue[rep] || 0) + rev;\n});\nconst bestRep = Object.entries(repRevenue)\n  .sort((a, b) => b[1] - a[1])[0];\n\n// ---- BEST CATEGORY ----\nconst categoryRevenue = {};\nrows.forEach(row => {\n  const cat = row.Category;\n  const rev = parseFloat(row.Revenue || 0);\n  categoryRevenue[cat] = (categoryRevenue[cat] || 0) + rev;\n});\nconst bestCategory = Object.entries(categoryRevenue)\n  .sort((a, b) => b[1] - a[1])[0];\n\n// ---- MoM CHANGE ----\nconst now = new Date();\nconst thisMonth = now.getMonth();\nconst lastMonth = thisMonth === 0 ? 11 : thisMonth - 1;\n\nconst thisMonthRev = rows\n  .filter(row => new Date(row.Date).getMonth() === thisMonth)\n  .reduce((sum, row) => sum + parseFloat(row.Revenue || 0), 0);\n\nconst lastMonthRev = rows\n  .filter(row => new Date(row.Date).getMonth() === lastMonth)\n  .reduce((sum, row) => sum + parseFloat(row.Revenue || 0), 0);\n\nconst momChange = lastMonthRev > 0\n  ? (((thisMonthRev - lastMonthRev) / lastMonthRev) * 100).toFixed(1)\n  : 'N/A';\n\nconst momArrow = parseFloat(momChange) >= 0 ? '📈' : '📉';\n\n// ---- FORMAT NUMBERS ----\nconst formatNaira = (num) => \n  '₦' + num.toLocaleString('en-NG', {maximumFractionDigits: 0});\n\n// ---- TOTAL ORDERS ----\nconst totalOrders = rows.length;\n\n// ---- AVG ORDER VALUE ----\nconst avgOrderValue = totalRevenue / totalOrders;\n\n// ---- RETURN RESULTS ----\nreturn [{\n  json: {\n    reportDate: now.toDateString(),\n    totalRevenue: formatNaira(totalRevenue),\n    totalOrders: totalOrders,\n    avgOrderValue: formatNaira(avgOrderValue),\n    bestProduct: bestProduct[0],\n    bestProductRevenue: formatNaira(bestProduct[1]),\n    bestCategory: bestCategory[0],\n    bestCategoryRevenue: formatNaira(bestCategory[1]),\n    bestRegion: bestRegion[0],\n    bestRegionRevenue: formatNaira(bestRegion[1]),\n    bestSalesRep: bestRep[0],\n    bestSalesRepRevenue: formatNaira(bestRep[1]),\n    thisMonthRevenue: formatNaira(thisMonthRev),\n    lastMonthRevenue: formatNaira(lastMonthRev),\n    momChange: `${momChange}%`,\n    momArrow: momArrow\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -32,
+        0
+      ],
+      "id": "99936f57-52a2-4537-9fbd-95501edb1cc6",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "sendTo": "samuelifeoluwa111@gmail.com",
+        "subject": "=📊 Weekly Business Report — {{ $json.reportDate }}",
+        "message": "=<div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px;\">    <h2 style=\"color: #1a1a2e; border-bottom: 2px solid #1a1a2e; padding-bottom: 10px;\">     📊 Weekly Business Report   </h2>   <p style=\"color: #666;\">Report Date: <strong>{{ $json.reportDate }}</strong></p>    <!-- REVENUE SUMMARY -->   <div style=\"background: #f8f9fa; padding: 15px; border-radius: 6px; margin: 20px 0;\">     <h3 style=\"color: #1a1a2e; margin-top: 0;\">💰 Revenue Summary</h3>     <table style=\"width: 100%; border-collapse: collapse;\">       <tr>         <td style=\"padding: 8px 0; color: #666;\">Total Revenue</td>         <td style=\"padding: 8px 0; font-weight: bold; text-align: right;\">{{ $json.totalRevenue }}</td>       </tr>       <tr>         <td style=\"padding: 8px 0; color: #666;\">Total Orders</td>         <td style=\"padding: 8px 0; font-weight: bold; text-align: right;\">{{ $json.totalOrders }}</td>       </tr>       <tr>         <td style=\"padding: 8px 0; color: #666;\">Avg Order Value</td>         <td style=\"padding: 8px 0; font-weight: bold; text-align: right;\">{{ $json.avgOrderValue }}</td>       </tr>       <tr style=\"border-top: 1px solid #e0e0e0;\">         <td style=\"padding: 8px 0; color: #666;\">This Month</td>         <td style=\"padding: 8px 0; font-weight: bold; text-align: right;\">{{ $json.thisMonthRevenue }}</td>       </tr>       <tr>         <td style=\"padding: 8px 0; color: #666;\">Last Month</td>         <td style=\"padding: 8px 0; font-weight: bold; text-align: right;\">{{ $json.lastMonthRevenue }}</td>       </tr>       <tr>         <td style=\"padding: 8px 0; color: #666;\">MoM Change</td>         <td style=\"padding: 8px 0; font-weight: bold; text-align: right;\">{{ $json.momArrow }} {{ $json.momChange }}</td>       </tr>     </table>   </div>    <!-- TOP PERFORMERS -->   <div style=\"background: #f8f9fa; padding: 15px; border-radius: 6px; margin: 20px 0;\">     <h3 style=\"color: #1a1a2e; margin-top: 0;\">🏆 Top Performers</h3>     <table style=\"width: 100%; border-collapse: collapse;\">       <tr>         <td style=\"padding: 8px 0; color: #666;\">Best Product</td>         <td style=\"padding: 8px 0; font-weight: bold; text-align: right;\">{{ $json.bestProduct }} ({{ $json.bestProductRevenue }})</td>       </tr>       <tr>         <td style=\"padding: 8px 0; color: #666;\">Best Category</td>         <td style=\"padding: 8px 0; font-weight: bold; text-align: right;\">{{ $json.bestCategory }} ({{ $json.bestCategoryRevenue }})</td>       </tr>       <tr>         <td style=\"padding: 8px 0; color: #666;\">Best Region</td>         <td style=\"padding: 8px 0; font-weight: bold; text-align: right;\">{{ $json.bestRegion }} ({{ $json.bestRegionRevenue }})</td>       </tr>       <tr>         <td style=\"padding: 8px 0; color: #666;\">Best Sales Rep</td>         <td style=\"padding: 8px 0; font-weight: bold; text-align: right;\">{{ $json.bestSalesRep }} ({{ $json.bestSalesRepRevenue }})</td>       </tr>     </table>   </div>    <p style=\"color: #999; font-size: 12px; border-top: 1px solid #e0e0e0; padding-top: 15px; margin-top: 20px;\">     This report was generated automatically. No human touched it.<br/>     Powered by Samuel Makanjuola — Data & Automation   </p>  </div>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        176,
+        0
+      ],
+      "id": "f701571d-4829-46aa-bdb0-e55a7704dbc4",
+      "name": "Send a message",
+      "webhookId": "c91a6e40-0109-44a9-b587-4dd046bb280d",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "bFOEXWjeIVy3hc3m",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "b4756f34-5c19-4afa-bbab-48e61df012d6",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "17ab857a60f6801560f025ca6c30b00115d31eddb23d83162fe6ae0a4f1769e8"
+  },
+  "id": "yadlyzerbo8rdbZy",
+  "tags": []
+}
