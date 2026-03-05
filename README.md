@@ -113,4 +113,29 @@ n8n-Weekly-Business-Report/
 
 ---
 
-*Part of a series of business automation projects built with n8n. Next: Lead Capture to Live Dashboard (Google Forms to n8n to Google Sheets to Looker Studio).*
+
+---
+
+## 🛡️ License
+This project is licensed under the MIT License. You are free to use, modify, 
+and share this project with proper attribution.
+
+---
+
+## 🌟 About Me
+Hi, I'm Samuel Ayomide Makanjuola — an Analytics Engineer and BI Analyst 
+based in Abuja, Nigeria.
+
+I build end-to-end data solutions, from structured data warehouses and SQL 
+pipelines to Power BI dashboards and automated reporting workflows. My work 
+sits at the intersection of data engineering, business intelligence and 
+workflow automation — I care about building things that actually work in 
+practice, not just in theory.
+
+I document everything I build here on GitHub so others can learn from it, 
+use it and improve on it. If something I built helped you, a star on the 
+repo goes a long way.
+
+[Portfolio](https://samuel-ayomide-makanjuola-portfolio.netlify.app/) • 
+[LinkedIn](http://www.linkedin.com/in/samuel-ayomide-makanjuola-78443937a) • 
+[GitHub](https://github.com/Jahsmine00001)
